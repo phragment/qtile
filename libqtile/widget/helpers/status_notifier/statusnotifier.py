@@ -245,7 +245,19 @@ class StatusNotifierItem:  # noqa: E303
         try:
             icon_path = await self.item.get_icon_theme_path()
             self.icon = self._get_custom_icon(icon_name, icon_path)
-        except (AttributeError, DBusError):
+
+            # got an icon_path but icon is not at icon_path/icon_name(.png|.svg)
+            if not self.icon:
+                # search for icon_name
+                candidates = []
+                for root, dirs, files in os.walk(icon_path):
+                    for fn in files:
+                        if icon_name in fn:
+                            candidates.append((root, fn[:-4]))
+                # select "last" entry to prefer scalable svg over 16x16 png
+                icon_path, icon_name = sorted(candidates, reverse=True)[0]
+                self.icon = self._get_custom_icon(icon_name, icon_path)
+        except (AttributeError, DBusError, IndexError):
             pass
 
         if not self.icon:
