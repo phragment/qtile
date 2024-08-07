@@ -53,6 +53,13 @@ def rename_process():
     except ImportError:
         pass
 
+    try:
+        import prctl
+
+        prctl.set_name("qtile")
+    except ImportError:
+        pass
+
 
 def make_qtile(options) -> Qtile | None:
     qtile.core.name = options.backend
